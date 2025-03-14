@@ -2,14 +2,14 @@
 
 echo -e "Post-merge healthcheck\n"
 echo "Current time: $(date)"
-echo -e "\n\n"
-echo "Disk space usage:\n"
+echo -e "\n"
+echo -e "Disk space usage:\n"
 df -h
 
-echo "Memory use:\n"
+echo -e "Memory use:\n"
 free -h
 
-echo "Running tasks:\n"
+echo -e "Running tasks:\n"
 ps -aux
-
+echo "-----------------------"
 echo "Healthcheck complete"
