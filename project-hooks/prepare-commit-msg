@@ -1,0 +1,12 @@
+#!/bin/bash
+
+USERNAME=$(whoami)
+COMMIT_MSG=$1
+
+# logic
+ORIG_COMMIT_MSG=$(cat "$COMMIT_MSG")
+
+# only add username if it's not there now
+if [[ ! "$ORIG_COMMIT_MSG" =~ ^\[$USERNAME\] ]]; then
+	echo "[$USERNAME] $ORIG_COMMIT_MSG" > "$COMMIT_MSG"
+fi

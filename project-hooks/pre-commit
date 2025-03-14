@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# Pre-commit hook to block either of the two scenarios:
+# 1. .log or .tmp files committed
+# 2. .sh files committed despite still including comments that include '# DEBUG'
+
+echo "Pre-commit check running..."
+
+# Global var definitions
+STAGED_FILE_LIST=$(git diff --staged --name-only)
+BLOCK=0
+ERRORMSG=""
+
+# Logic
+# Edge case 1: no files staged
+if [ -z "$STAGED_FILE_LIST" ]; then
+	echo "No files staged for commit"
+	exit 0
+fi
+
+# Block commits of *.tmp and *.log files
+LOG_TMP_FILES=$(find $STAGED_FILE_LIST -type f -name "*.tmp" -o -name "*.log" 2>/dev/null)
+if [ -n "$LOG_TMP_FILES" ]; then
+	BLOCK=1
+	ERRORMSG="Error: trying to commit *.log or *.tmp files: \n$LOG_TMP_FILES\n"
+fi
+
+# To block commits of shell files with comments including '# DEBUG'
+# we'd first need to iterate over all files
+for FILE in $STAGED_FILE_LIST; do
+	if [[ "$FILE" == *.sh ]]; then
+	        if grep -q "# DEBUG" "$FILE"; then
+			BLOCK=1
+			if [ -z "$COMMENT_FILES" ]; then
+				COMMENT_FILES="$FILE"
+			else
+				COMMENT_FILES="$COMMENT_FILES\n$FILE"
+			fi
+		fi
+	fi
+done
+
+if [ -n "$COMMENT_FILES" ]; then
+	echo -e "Error: commit includes .sh files that still contain '# DEBUG' comments:\n$COMMENT_FILES\n"
+fi
+
+# Block commit iff BLOCK=1
+if [ $BLOCK -eq 1 ]; then
+	echo -e "$ERRORMSG"
+	echo "Commit aborted. Please fix the issues above and try again."
+	exit 1
+fi
+
+echo "All pre-commit checks passed"
+exit 0

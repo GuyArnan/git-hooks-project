@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "pre-push hook checking for files larger than 1MB in the repo"
+
+LARGE_FILES=$(find . -type f -size +1M)
+
+# Block push if llarge files are found
+if [ -n "$LARGE_FILES" ]; then
+	echo "error: repo contains files larger than 1MB. Push blocked"
+	echo -e "$LARGE_FILES"
+	echo "Remove or reduce the size of these files before re-pushing"
+	exit 1
+fi
+
+exit 0
